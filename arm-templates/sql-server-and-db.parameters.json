@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "administratorLogin": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "administratorLoginPassword": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "collation": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "databaseName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "tier": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "skuName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "location": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "maxSizeBytes": {
+            "value": 0 // TODO: Fill in parameter value
+        },
+        "serverName": {
+            "value": "" // TODO: Fill in parameter value
+        }
+    }
+}

@@ -1,0 +1,286 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "virtualNetworkName": "[concat(toLower(resourceGroup().name),'-',toLower(resourceGroup().location))]",
+        "subnetNetworkName": "[concat('shared-subnet-',toLower(resourceGroup().location))]"
+    },
+    "resources": [
+        {
+            "name": "azure-vnet-euw",
+            "type": "Microsoft.Network/VirtualNetworks",
+            "apiVersion": "2019-09-01",
+            "location": "westeurope",
+            "dependsOn": [],
+            "tags": {
+                "Customer": "",
+                "Usage": "Shared",
+                "Environment": "Production"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "192.168.101.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.101.0/27"
+                        }
+                    },
+                    {
+                        "name": "AzureFirewallSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.101.32/27"
+                        }
+                    },
+                    {
+                        "name": "AzureBastionSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.101.64/27"
+                        }
+                    },
+                    {
+                        "name": "AzureADDSSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.101.96/27"
+                        }
+                    },
+                    {
+                        "name": "WorkloadSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.101.128/25",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.AzureActiveDirectory"
+                                },
+                                {
+                                    "service": "Microsoft.AzureCosmosDB"
+                                },
+                                {
+                                    "service": "Microsoft.CognitiveServices"
+                                },
+                                {
+                                    "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.EventHub"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
+                                },
+                                {
+                                    "service": "Microsoft.ServiceBus"
+                                },
+                                {
+                                    "service": "Microsoft.Sql"
+                                },
+                                {
+                                    "service": "Microsoft.Storage"
+                                },
+                                {
+                                    "service": "Microsoft.Web"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "enableDdosProtection": false
+
+
+            },
+            "resources": [
+                {
+                    "apiVersion": "2020-05-01",
+                    "type": "virtualNetworkPeerings",
+                    "name": "vnet-euw_to_vnet-eun",
+                    "location": "westeurope",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/virtualNetworks/', 'azure-vnet-euw')]",
+                        "[resourceId('Microsoft.Network/virtualNetworks/', 'azure-vnet-eun')]"
+                    ],
+                    "comments": "Peering betwneen EUW and EUN",
+                    "properties": {
+                        "allowVirtualNetworkAccess": true,
+                        "allowForwardedTraffic": false,
+                        "allowGatewayTransit": false,
+                        "useRemoteGateways": false,
+                        "remoteVirtualNetwork": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks','azure-vnet-eun')]"
+                        }
+                    }
+                }
+            ]
+
+        },
+        {
+            "name": "azure-vnet-eun",
+            "type": "Microsoft.Network/VirtualNetworks",
+            "apiVersion": "2019-09-01",
+            "location": "northeurope",
+            "dependsOn": [],
+            "tags": {
+                "Customer": "",
+                "Usage": "Shared",
+                "Environment": "Production"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "192.168.102.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "WorkloadSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.102.128/25",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.AzureActiveDirectory"
+                                },
+                                {
+                                    "service": "Microsoft.AzureCosmosDB"
+                                },
+                                {
+                                    "service": "Microsoft.CognitiveServices"
+                                },
+                                {
+                                    "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.EventHub"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
+                                },
+                                {
+                                    "service": "Microsoft.ServiceBus"
+                                },
+                                {
+                                    "service": "Microsoft.Sql"
+                                },
+                                {
+                                    "service": "Microsoft.Storage"
+                                },
+                                {
+                                    "service": "Microsoft.Web"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "enableDdosProtection": false,
+                "resources": [
+                    {
+                        "apiVersion": "2020-05-01",
+                        "type": "virtualNetworkPeerings",
+                        "name": "vnet-eun_to_vnet-euw",
+                        "location": "northeurope",
+                        "dependsOn": [
+                            "[resourceId('Microsoft.Network/virtualNetworks/', 'azure-vnet-eun')]",
+                            "[resourceId('Microsoft.Network/virtualNetworks/', 'azure-vnet-euw')]"
+                        ],
+                        "comments": "Peering betwneen EUN and EUW",
+                        "properties": {
+                            "allowVirtualNetworkAccess": true,
+                            "allowForwardedTraffic": false,
+                            "allowGatewayTransit": false,
+                            "useRemoteGateways": false,
+                            "remoteVirtualNetwork": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks','azure-vnet-euw')]"
+                            }
+                        }
+                    }
+                ]
+
+            }
+        },
+
+        {
+            "apiVersion": "2019-02-01",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "name": "azure-bastion-pip-euw",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "tags": {}
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/bastionHosts",
+            "name": "azure-bastion-host-euw",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', 'azure-bastion-pip-euw')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', 'azure-vnet-euw','AzureBastionSubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', 'azure-bastion-pip-euw')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat('azure-vnet-eun', '/vnet-eun-to-vnet-euw')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'azure-vnet-euw')]"
+            ],
+            "properties": {
+                "remoteVirtualNetwork": {
+                    "id": "/subscriptions/63ca7304-b09a-4f97-b8eb-fdbc2138574c/resourceGroups/Network/providers/Microsoft.Network/virtualNetworks/azure-vnet-euw"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteAddressSpace": {
+                    "addressPrefixes": [
+                        "192.168.101.0/24"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat('azure-vnet-euw', '/vnet-euw-to-vnet-eun')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'azure-vnet-eun')]"
+            ],
+            "properties": {
+                "remoteVirtualNetwork": {
+                    "id": "/subscriptions/63ca7304-b09a-4f97-b8eb-fdbc2138574c/resourceGroups/Network/providers/Microsoft.Network/virtualNetworks/azure-vnet-eun"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteAddressSpace": {
+                    "addressPrefixes": [
+                        "192.168.102.0/24"
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
