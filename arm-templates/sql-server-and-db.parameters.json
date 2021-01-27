@@ -3,10 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "administratorLogin": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "yooakim"
         },
         "administratorLoginPassword": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "Luv2Query!"
         },
         "collation": {
             "value": "" // TODO: Fill in parameter value
